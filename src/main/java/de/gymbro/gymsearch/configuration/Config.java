@@ -34,8 +34,8 @@ import java.util.UUID;
 @Configuration
 @EnableWebSecurity
 public class Config {
-    public final static String CLIENT_HOST = "mobile-clients-api.rewe.de";
-    public final static String API_HOST = "mobile-api.rewe.de";
+    public final static String REWE_CLIENT_HOST = "mobile-clients-api.rewe.de";
+    public final static String REWE_API_HOST = "mobile-api.rewe.de";
 
     @Value("${gymsearch.admin.username}")
     private String adminUsername;
@@ -63,13 +63,21 @@ public class Config {
                 .roles("ADMIN")
                 .build();
 
-        return new InMemoryUserDetailsManager(admin);
+        UserDetails user = User.withUsername("testUser")
+                .password(passwordEncoder().encode("testPassword"))
+                .roles("USER")
+                .build();
+
+        return new InMemoryUserDetailsManager(admin, user);
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        return http.authorizeHttpRequests(request -> request.anyRequest()
-                .authenticated())
+        return http.authorizeHttpRequests(request -> request
+                        .requestMatchers("/api/rewe/**")
+                        .hasRole("ADMIN"))
+                .csrf(Customizer.withDefaults())
+                .cors(Customizer.withDefaults())
                 .httpBasic(Customizer.withDefaults())
                 .build();
     }

@@ -15,8 +15,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import static de.gymbro.gymsearch.configuration.Config.API_HOST;
-import static de.gymbro.gymsearch.configuration.Config.CLIENT_HOST;
+import static de.gymbro.gymsearch.configuration.Config.REWE_API_HOST;
+import static de.gymbro.gymsearch.configuration.Config.REWE_CLIENT_HOST;
 
 @Slf4j
 @Service
@@ -29,7 +29,7 @@ public class ReweService {
     private ObjectMapper objectMapper;
 
     public List<Offer> getReweDiscounts(String marketId) {
-        String reweResponse = reweSslRestTemplate.getForObject("https://" + CLIENT_HOST + "/api/" + DISCOUNTS_PATH + marketId, String.class);
+        String reweResponse = reweSslRestTemplate.getForObject("https://" + REWE_CLIENT_HOST + "/api/" + DISCOUNTS_PATH + marketId, String.class);
 
         if (reweResponse == null) {
             return null;
@@ -79,9 +79,9 @@ public class ReweService {
         return offersList;
     }
 
-    public List<Market> getMarkets(String searchQuery) {
+    public List<Market> getReweMarkets(String searchQuery) {
         String query = "search=" + URLEncoder.encode(searchQuery, StandardCharsets.UTF_8);
-        String reweResponse = reweSslRestTemplate.getForObject("https://" + API_HOST + "/api/" + SEARCH_PATH + query, String.class);
+        String reweResponse = reweSslRestTemplate.getForObject("https://" + REWE_API_HOST + "/api/" + SEARCH_PATH + query, String.class);
 
         JsonNode responseDom = getResponseDom(reweResponse);
 

@@ -34,7 +34,7 @@ public class ReweController {
 
     @GetMapping("/markets/{searchQuery}")
     public ResponseEntity<List<Market>> getMarkets(@PathVariable String searchQuery) {
-        List<Market> response = mapMarkets(reweService.getMarkets(searchQuery));
+        List<Market> response = mapMarkets(reweService.getReweMarkets(searchQuery));
 
         if (response == null) {
             return ResponseEntity.internalServerError().build();
