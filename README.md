@@ -44,6 +44,8 @@ mvn spring-boot:run
 
 ## Attribution
 
+### REWErse engineers
+
 - [@foo-git](https://github.com/foo-git) -:- [rewe-discounts](https://github.com/foo-git/rewe-discounts)
 - [@torbenpfohl](https://github.com/torbenpfohl) -:- [rewe-discounts](https://github.com/torbenpfohl/rewe-discounts)
 - [@ByteSizedMarius](https://github.com/ByteSizedMarius) -:- [rewerse-engineering](https://github.com/ByteSizedMarius/rewerse-engineering)
