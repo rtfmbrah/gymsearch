@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpRequest;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -23,7 +24,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.DefaultUriBuilderFactory;
 
 import javax.net.ssl.SSLContext;
 import java.security.KeyStore;
@@ -34,6 +34,9 @@ import java.util.UUID;
 @Configuration
 @EnableWebSecurity
 public class Config {
+    public final static String CLIENT_HOST = "mobile-clients-api.rewe.de";
+    public final static String API_HOST = "mobile-api.rewe.de";
+
     @Value("${gymsearch.admin.username}")
     private String adminUsername;
 
@@ -45,8 +48,6 @@ public class Config {
 
     @Value("${gymsearch.keystore.password}")
     private String keystorePassword;
-
-    private final String host = "mobile-clients-api.rewe.de";
 
     private final List<String> userAgents = List.of(
             "Phone/Samsung_SM-G975U", "Phone/Samsung_SM-N975U", "Phone/Samsung_SM-G973U", "Phone/OnePlus_HD1925",
@@ -103,30 +104,32 @@ public class Config {
 
         HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(closableHttpClient);
 
-        String userAgentSuffix = userAgents.get(new Random().nextInt(userAgents.size()));
-
         RestTemplate restTemplate = new RestTemplate(requestFactory);
-        restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory("https://" + host + "/api/"));
-
         restTemplate.getInterceptors().add((request, body, execution) -> {
-            HttpHeaders headers = request.getHeaders();
-            headers.set("rdfa", UUID.randomUUID().toString());
-            headers.set("correlation-id", UUID.randomUUID().toString());
-            headers.set("rd-service-types", "UNKNOWN");
-            headers.set("x-rd-service-types", "UNKNOWN");
-            headers.set("rd-is-lsfk", "false");
-            headers.set("rd-customer-zip", "");
-            headers.set("rd-postcode", "");
-            headers.set("x-rd-customer-zip", "");
-            headers.set("rd-market-id", "");
-            headers.set("x-rd-market-id", "");
-            headers.set("a-b-test-groups", "productlist-citrusad");
-            headers.set(HttpHeaders.USER_AGENT, String.format("REWE-Mobile-Client/3.18.5.33032 Android/14 %s", userAgentSuffix));
-            headers.set(HttpHeaders.HOST, host);
-            headers.set(HttpHeaders.CONNECTION, "Keep-Alive");
+            setHeadersForReweClient(request);
             return execution.execute(request, body);
         });
 
         return restTemplate;
+    }
+
+    private void setHeadersForReweClient(HttpRequest request) {
+        String userAgentSuffix = userAgents.get(new Random().nextInt(userAgents.size()));
+
+        HttpHeaders headers = request.getHeaders();
+        headers.set("rdfa", UUID.randomUUID().toString());
+        headers.set("Correlation-Id", UUID.randomUUID().toString());
+        headers.set("rd-service-types", "UNKNOWN");
+        headers.set("x-rd-service-types", "UNKNOWN");
+        headers.set("rd-is-lsfk", "false");
+        headers.set("rd-customer-zip", "");
+        headers.set("rd-postcode", "");
+        headers.set("x-rd-customer-zip", "");
+        headers.set("rd-market-id", "");
+        headers.set("x-rd-market-id", "");
+        headers.set("a-b-test-groups", "productlist-citrusad");
+        headers.set(HttpHeaders.USER_AGENT, String.format("REWE-Mobile-Client/3.18.5.33032 Android/14 %s", userAgentSuffix));
+        headers.set(HttpHeaders.HOST, request.getURI().getHost());
+        headers.set(HttpHeaders.CONNECTION, "Keep-Alive");
     }
 }
